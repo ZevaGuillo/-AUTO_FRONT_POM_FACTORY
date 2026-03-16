@@ -1,0 +1,69 @@
+plugins {
+    id 'java'
+    id 'net.serenity-bdd.serenity-gradle-plugin' version '5.3.2'
+}
+
+defaultTasks 'clean', 'test', 'aggregate'
+
+group = 'com.ticketing'
+version = '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+    mavenLocal()
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+ext {
+    serenity_version = '5.3.2'
+    junit_platform_launcher_version = '1.13.0'
+    cucumber_junit_platform_engine_version = '7.34.2' 
+    junit_platform_suite_version = '6.0.3'
+    junit_jupiter_engine_version = '6.0.3'
+    junit_vintage_engine_version = '6.0.3'
+    junit_version = '4.13.2'
+    logback_classic_version = '1.2.10'
+    assertj_core_version = '3.25.3'
+    webdrivermanager_version = '5.9.2'
+}
+
+dependencies {
+    testImplementation "net.serenity-bdd:serenity-core:${serenity_version}"
+    testImplementation "net.serenity-bdd:serenity-cucumber:${serenity_version}"
+    testImplementation "net.serenity-bdd:serenity-screenplay:${serenity_version}"
+    testImplementation "net.serenity-bdd:serenity-screenplay-webdriver:${serenity_version}"
+    testImplementation "net.serenity-bdd:serenity-ensure:${serenity_version}"
+    testImplementation "junit:junit:${junit_version}"
+    testImplementation "org.junit.platform:junit-platform-launcher:${junit_platform_launcher_version}"
+    testImplementation "io.cucumber:cucumber-junit-platform-engine:${cucumber_junit_platform_engine_version}"
+    testImplementation "org.junit.platform:junit-platform-suite:${junit_platform_suite_version}"
+    testImplementation "org.junit.jupiter:junit-jupiter-engine:${junit_jupiter_engine_version}"
+    testImplementation "org.junit.vintage:junit-vintage-engine:${junit_vintage_engine_version}"
+    testImplementation "org.assertj:assertj-core:${assertj_core_version}"
+    testImplementation "io.github.bonigarcia:webdrivermanager:${webdrivermanager_version}"
+    implementation "ch.qos.logback:logback-classic:${logback_classic_version}"
+}
+
+test {
+    useJUnitPlatform()
+    testLogging.showStandardStreams = true
+    systemProperties System.getProperties()
+}
+
+serenity {
+    reports = ['single-page-html']
+}
+
+gradle.startParameter.continueOnFailure = true
+
+test.finalizedBy(aggregate)
+
+// Gradle wrapper
+wrapper {
+    gradleVersion = '8.10'
+}
