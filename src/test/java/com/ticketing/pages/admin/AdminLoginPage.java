@@ -31,7 +31,7 @@ public class AdminLoginPage extends BasePage {
     @FindBy(css = "[data-auto-fill]")
     private WebElementFacade autoFillButton;
     
-    @FindBy(css = ".login-form")
+    @FindBy(xpath = "//div[@data-slot='card-content']")
     private WebElementFacade loginForm;
     
     @FindBy(css = "h1")

@@ -7,9 +7,9 @@ import org.openqa.selenium.support.FindBy;
 
 /**
  * Page Object for the Edit Event page
- * URL: /admin/events/[eventId]/edit
+ * URL: /admin/events/{eventId}/edit
  */
-@DefaultUrl("/admin/events")
+@DefaultUrl("/admin/events/edit")
 public class EditEventPage extends BasePage {
     
     @FindBy(id = "name")

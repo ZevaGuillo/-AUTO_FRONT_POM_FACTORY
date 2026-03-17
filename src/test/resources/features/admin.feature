@@ -21,7 +21,7 @@ Feature: Admin Management
     And navega a la página de creación de eventos
     When completa el formulario con datos válidos del evento
     | name          | description      | eventDate  | venue           | maxCapacity | basePrice |
-    | Test Concert  | Test Description | 2024-12-25 | Madison Square  | 1000        | 50        |
+    | Test Concert  | Test Description | 2026-12-25 | Madison Square  | 1000        | 50        |
     Then el evento debe crearse exitosamente
     And debe mostrar confirmación de creación
     And debe aparecer en la lista de eventos

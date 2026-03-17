@@ -4,6 +4,9 @@ import com.ticketing.pages.BasePage;
 import com.ticketing.utils.TestUtils;
 import net.serenitybdd.core.pages.WebElementFacade;
 import net.serenitybdd.annotations.DefaultUrl;
+
+import java.util.List;
+
 import org.openqa.selenium.support.FindBy;
 
 /**
@@ -31,7 +34,16 @@ public class CreateEventPage extends BasePage {
     @FindBy(id = "basePrice")
     private WebElementFacade basePriceInput;
     
-    @FindBy(css = "button[type='submit']")
+    @FindBy(id = "imageUrl")
+    private WebElementFacade imageUrlInput;
+
+    @FindBy(id = "tags")
+    private WebElementFacade tagsInput;
+
+    @FindBy(id = "isActive")
+    private WebElementFacade activeCheckbox;
+
+    @FindBy(xpath = "//button[@type='submit' and contains(text(),'Crear Evento')]")
     private WebElementFacade submitButton;
     
     @FindBy(css = "[data-error-message]")
@@ -40,20 +52,20 @@ public class CreateEventPage extends BasePage {
     @FindBy(css = "[data-success-message]")
     private WebElementFacade successMessage;
     
-    @FindBy(css = ".form-container")
+    @FindBy(xpath = "//div[@data-slot='card']")
     private WebElementFacade formContainer;
     
     @FindBy(css = "h1")
     private WebElementFacade pageTitle;
     
-    @FindBy(css = "[data-cancel-button]")
+    @FindBy(xpath = "//a[@href='/admin/events']//button")
     private WebElementFacade cancelButton;
     
     @FindBy(css = ".loading-spinner")
     private WebElementFacade loadingSpinner;
     
-    @FindBy(css = ".field-error")
-    private WebElementFacade fieldError;
+    @FindBy(xpath = "//input[@aria-invalid='true']")
+    private List<WebElementFacade> fieldErrors;
     
     @FindBy(css = "[data-generate-seats-checkbox]")
     private WebElementFacade generateSeatsCheckbox;
@@ -63,6 +75,9 @@ public class CreateEventPage extends BasePage {
     
     @FindBy(css = "#category")
     private WebElementFacade categorySelect;
+
+    @FindBy(css = ".field-error") 
+    private WebElementFacade fieldError;
     
     /**
      * Fill the event name field
@@ -90,8 +105,24 @@ public class CreateEventPage extends BasePage {
      */
     public void fillEventDate(String eventDate) {
         waitForElement(eventDateInput);
-        typeText(eventDateInput, eventDate);
-        logger.info("Filled event date: {}", eventDate);
+
+        String formattedDate = eventDate + "T10:00";
+
+        evaluateJavascript(
+            "const input = arguments[0];" +
+            "const value = arguments[1];" +
+
+            "const nativeSetter = Object.getOwnPropertyDescriptor(" +
+            "window.HTMLInputElement.prototype, 'value').set;" +
+
+            "nativeSetter.call(input, value);" +
+
+            "input.dispatchEvent(new Event('input', { bubbles: true }));",
+            eventDateInput,
+            formattedDate
+        );
+
+        logger.info("Filled event date: {}", formattedDate);
     }
     
     /**

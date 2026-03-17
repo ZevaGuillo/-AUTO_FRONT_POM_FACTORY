@@ -19,7 +19,7 @@ import java.time.Duration;
 public abstract class BasePage extends PageObject {
     
     protected static final Logger logger = LoggerFactory.getLogger(BasePage.class);
-    private static final int DEFAULT_TIMEOUT = 30;
+    private static final int DEFAULT_TIMEOUT = 5;
     
     /**
      * Wait for an element to be visible on the page

@@ -1,8 +1,13 @@
 package com.ticketing.stepdefinitions;
 
 import com.ticketing.steps.AdminSteps;
+
+import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.*;
 import net.serenitybdd.annotations.Steps;
+
+import java.util.Map;
+
 import org.junit.Assert;
 
 /**
@@ -65,8 +70,18 @@ public class AdminStepDefinitions {
     }
 
     @When("completa el formulario con datos válidos del evento")
-    public void completaElFormularioConDatosValidosDelEvento() {
-        adminSteps.createNewEvent("Test Concert", "Test Description", "2024-12-25", "Madison Square", "1000", "50");
+    public void completaElFormularioConDatosValidosDelEvento(DataTable table) {
+
+        Map<String, String> data = table.asMaps().get(0);
+
+        adminSteps.createNewEvent(
+            data.get("name"),
+            data.get("description"),
+            data.get("eventDate"),
+            data.get("venue"),
+            data.get("maxCapacity"),
+            data.get("basePrice")
+        );
     }
 
     @Then("el evento debe crearse exitosamente")

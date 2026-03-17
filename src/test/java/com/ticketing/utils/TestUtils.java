@@ -44,7 +44,7 @@ public class TestUtils {
      * @return Admin password from configuration
      */
     public static String getAdminPassword() {
-        return System.getProperty("test.admin.password", "admin123");
+        return System.getProperty("test.admin.password", "Admin123!");
     }
     
     /**

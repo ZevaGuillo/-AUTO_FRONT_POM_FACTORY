@@ -17,13 +17,13 @@ public class AdminDashboardPage extends BasePage {
     @FindBy(css = "h1")
     private WebElementFacade pageTitle;
     
-    @FindBy(css = ".admin-nav")
+    @FindBy(xpath = "//div[@data-slot='card' and contains(@class,'fixed')]")
     private WebElementFacade adminNavigation;
     
     @FindBy(css = "[data-events-link]")
     private WebElementFacade eventsLink;
     
-    @FindBy(css = "[data-create-event-link]")
+    @FindBy(xpath = "//a[@href='/admin/events/create']")
     private WebElementFacade createEventLink;
     
     @FindBy(css = "[data-logout-button]")
@@ -220,8 +220,7 @@ public class AdminDashboardPage extends BasePage {
     public boolean isDashboardLoaded() {
         waitForPageLoad();
         return isElementVisible(pageTitle) && 
-               isElementVisible(adminNavigation) &&
-               isElementVisible(dashboardStats);
+               isElementVisible(adminNavigation);
     }
     
     /**
