@@ -1,8 +1,26 @@
 # Framework de Automatización Frontend con Serenity BDD
 
-## 📋 Descripción
+## 📋 Descripción del Proyecto
 
-Este proyecto implementa un framework de automatización de pruebas para el sistema de ticketing frontend utilizando **Serenity BDD** con el patrón **Page Object Model + Page Factory**. El framework está diseñado para probar aplicaciones web desarrolladas en **Next.js 14** con **TypeScript** y **shadcn/ui**.
+Este proyecto implementa un **framework de automatización de pruebas end-to-end** para el sistema de ticketing frontend. Fue diseñado para probar aplicaciones web desarrolladas en **Next.js 14** con **TypeScript** y componentes **shadcn/ui**.
+
+El framework utiliza metodologías de **Behavior-Driven Development (BDD)** permitiendo que las pruebas sean escritas en lenguaje natural (Gherkin) facilitando la comunicación entre equipos técnicos y de negocio.
+
+### Objetivos del Proyecto
+
+- Proporcionar una suite de pruebas automatizadas robusta y mantenible
+- Cubrir los flujos principales del sistema de ticketing
+- Generar reportes detallados y entendibles para stakeholders
+- Facilitar la integración con pipelines de CI/CD
+
+### Alcance
+
+El framework cubre tres módulos principales:
+1. **Módulo Público**: Visualización de eventos, selección de asientos, checkout
+2. **Módulo Administrativo**: Gestión de eventos, asientos, métricas
+3. **Módulo de Validación**: Seguridad, performance, accesibilidad
+
+---
 
 ## 🏗️ Arquitectura
 
@@ -64,9 +82,14 @@ Feature (Gherkin) → StepDefinitions → Steps (@Step) → Page Objects → Web
 
 ### Prerrequisitos
 
-- **Java 11** o superior
-- **Gradle 8.5** o superior  
-- **Google Chrome** (instalado)
+| Requisito | Versión Mínima | Verificación |
+|-----------|----------------|--------------|
+| **Java JDK** | 11 | `java -version` |
+| **Gradle** | 8.5 | `./gradlew --version` |
+| **Google Chrome** | última | `google-chrome --version` |
+| **Git** | 2.x | `git --version` |
+
+> **Nota**: Se recomienda usar JDK 17 para mejor rendimiento y compatibilidad.
 
 ### Instalación
 
@@ -92,7 +115,83 @@ java -version
 ./gradlew build --refresh-dependencies
 ```
 
+### Configuración del Entorno
+
+#### Variables de Entorno Requeridas
+
+```bash
+# URL base de la aplicación (requerido)
+export BASE_URL=http://localhost:3000
+
+# Entorno de ejecución (development, staging, production)
+export ENVIRONMENT=development
+
+# Configuración opcional de navegador
+export BROWSER=chrome
+export HEADLESS=false
+export TIMEOUT=30
+```
+
+#### Configuración en serenity.conf
+
+El archivo de configuración principal se encuentra en `src/test/resources/serenity.conf`:
+
+```hocon
+webdriver {
+  driver = chrome
+  baseurl = "http://localhost:3000"
+  chrome {
+    driver = webdriver.chrome.driver
+    switches = "--start-maximized,--disable-extensions"
+  }
+}
+
+serenity {
+  browser.width = 1920
+  browser.height = 1080
+  take.screenshots = FOR_FAILURES
+  logging = VERBOSE
+  restapi.timeout = 5000
+}
+
+cucumber {
+  filter.tags = "@smoke"
+}
+```
+
+### Verificación de Configuración
+
+```bash
+# Verificar que las dependencias se resuelvan correctamente
+./gradlew dependencies --configuration testRuntimeClasspath
+
+# Verificar la estructura del proyecto
+./gradlew tasks --all | grep -E "(test|build|run)"
+```
+
+### Ejecución de Prueba Inicial
+
+```bash
+# Ejecutar un test de smoke para verificar que todo funcione
+./gradlew test -Dcucumber.options="--tags @smoke"
+```
+
 ## 📋 Ejecutar Pruebas
+
+### Preparación Previa
+
+1. **Iniciar la aplicación** (si no está corriendo):
+```bash
+# En el proyecto frontend
+cd ../tu-proyecto-frontend
+npm run dev
+# La app debe estar corriendo en http://localhost:3000
+```
+
+2. **Verificar conexión**:
+```bash
+curl http://localhost:3000
+```
 
 ### Comandos Básicos
 
@@ -134,6 +233,32 @@ java -version
 
 # Solo administración
 ./gradlew test -Dcucumber.options="src/test/resources/features/admin.feature"
+```
+
+### Modos de Ejecución
+
+```bash
+# Modo verbose (más información en consola)
+./gradlew test --info
+
+# Modo debug (para debugging con breakpoints)
+./gradlew test --debug
+
+# Ejecución paralela (múltiples feature files)
+./gradlew test -Pparallel=true
+```
+
+### Parametrización de Tests
+
+```bash
+# Ejecutar con datos específicos
+./gradlew test -DtestEnvironment=staging
+
+# Ejecutar con retry automático
+./gradlew test -Dserenity.restart.browser.for.each.scenario=true
+
+# Cambiar timeout de elementos
+./gradlew test -Dwebdriver.timeouts.implicit.wait=5000
 ```
 
 ## 🌐 Configuración de Navegadores
