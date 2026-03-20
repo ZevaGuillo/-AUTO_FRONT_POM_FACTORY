@@ -70,13 +70,13 @@ Feature (Gherkin) → StepDefinitions → Steps (@Step) → Page Objects → Web
 
 | Componente | Versión | Propósito |
 |-----------|---------|-----------|
-| **Serenity BDD** | 4.1.0 | Framework principal de BDD |
-| **Gradle** | 8.5 | Herramienta de build |
-| **Java** | 11 | Lenguaje base |
-| **Selenium WebDriver** | 4.x | Automatización web |
-| **Cucumber** | 7.18.0 | Sintaxis Gherkin |
-| **JUnit 5** | 5.10.x | Framework de testing |
-| **WebDriverManager** | 5.7.0 | Gestión automática de drivers |
+| **Serenity BDD** | 5.3.2 | Framework principal de BDD |
+| **Gradle** | 8.10 | Herramienta de build |
+| **Java** | 21 | Lenguaje base |
+| **Selenium WebDriver** | (incluido en Serenity) | Automatización web |
+| **Cucumber** | 7.34.2 | Sintaxis Gherkin |
+| **JUnit Platform** | 6.0.3 | Framework de testing |
+| **WebDriverManager** | 5.9.2 | Gestión automática de drivers |
 
 ## 🚀 Configuración Inicial
 
@@ -84,12 +84,12 @@ Feature (Gherkin) → StepDefinitions → Steps (@Step) → Page Objects → Web
 
 | Requisito | Versión Mínima | Verificación |
 |-----------|----------------|--------------|
-| **Java JDK** | 11 | `java -version` |
-| **Gradle** | 8.5 | `./gradlew --version` |
+| **Java JDK** | 21 | `java -version` |
+| **Gradle** | 8.10 | `./gradlew --version` |
 | **Google Chrome** | última | `google-chrome --version` |
 | **Git** | 2.x | `git --version` |
 
-> **Nota**: Se recomienda usar JDK 17 para mejor rendimiento y compatibilidad.
+> **Nota**: El proyecto requiere Java 21. No es compatible con versiones anteriores.
 
 ### Instalación
 
