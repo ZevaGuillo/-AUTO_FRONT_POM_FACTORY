@@ -123,7 +123,11 @@ public class EventDetailsPage extends BasePage {
         String ariaFragment = String.format("%s%d-%d", section, row, seat);
         logger.info("Clicking seat with aria-label containing: {}", ariaFragment);
         WebElement seatButton = findSeatByAriaLabel(ariaFragment);
-        seatButton.click();
+        ((org.openqa.selenium.JavascriptExecutor) getDriver())
+                .executeScript("arguments[0].scrollIntoView({block:'center'});", seatButton);
+        try { Thread.sleep(300); } catch (InterruptedException e) { Thread.currentThread().interrupt(); }
+        ((org.openqa.selenium.JavascriptExecutor) getDriver())
+                .executeScript("arguments[0].click();", seatButton);
     }
 
     /**

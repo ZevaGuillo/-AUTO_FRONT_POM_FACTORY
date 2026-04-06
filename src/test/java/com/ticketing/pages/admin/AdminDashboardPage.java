@@ -93,7 +93,9 @@ public class AdminDashboardPage extends BasePage {
      */
     public void clickCreateEventLink() {
         waitForElementClickable(createEventLink);
-        clickElement(createEventLink);
+        scrollToElement(createEventLink);
+        try { Thread.sleep(300); } catch (InterruptedException e) { Thread.currentThread().interrupt(); }
+        evaluateJavascript("arguments[0].click();", createEventLink);
         logger.info("Navigated to Create Event");
     }
     
