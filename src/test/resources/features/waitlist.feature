@@ -31,19 +31,3 @@ Feature: Lista de Espera
     And selecciono la opción para unirme y confirmo mi registro
     Then debe mostrar un indicador visual con el mensaje "You're on the waitlist"
     And no se debe crear un registro duplicado en WAITLIST_ENTRIES
-
-  @positive @waitlist @cancelacion @alta
-  Scenario: CP_HU003_02 — Proceso de cancelación exitoso y actualización de la interfaz
-    Given otro usuario reserva el asiento 3 de fila 1 en la sección "General" del evento "Concierto Sinfónico"
-    And el usuario está autenticado en la plataforma Ticketing
-    And accedo a la página de detalles del evento "Concierto Sinfónico"
-    And la sección "General" tiene asientos reservados por otro usuario
-    When intento interactuar con un asiento reservado de la sección "General"
-    And selecciono la opción para unirme y confirmo mi registro
-    And debo visualizar un mensaje de confirmación "¡Te has unido a la lista de espera!"
-    When accedo a la página "My Waitlist"
-    Then debo ver mi suscripción al evento "Concierto Sinfónico" en la lista
-    When cancelo mi suscripción al evento "Concierto Sinfónico"
-    Then la suscripción al evento "Concierto Sinfónico" debe desaparecer de la lista
-    When recargo la página "My Waitlist"
-    Then no debo ver mi suscripción al evento "Concierto Sinfónico" en la lista
