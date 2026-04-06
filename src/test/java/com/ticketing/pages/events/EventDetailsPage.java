@@ -137,6 +137,7 @@ public class EventDetailsPage extends BasePage {
 
     /**
      * Click the first reserved seat in a given section to trigger the waitlist panel.
+     * Uses JS click to bypass overlapping elements after page refresh.
      */
     public void clickFirstReservedSeat(String section) {
         logger.info("Clicking first reserved seat in section: {}", section);
@@ -144,7 +145,12 @@ public class EventDetailsPage extends BasePage {
         if (reservedSeats.isEmpty()) {
             throw new AssertionError("No reserved seats found in section: " + section);
         }
-        reservedSeats.get(0).click();
+        WebElement seat = reservedSeats.get(0);
+        ((org.openqa.selenium.JavascriptExecutor) getDriver())
+                .executeScript("arguments[0].scrollIntoView({block:'center'});", seat);
+        try { Thread.sleep(300); } catch (InterruptedException e) { Thread.currentThread().interrupt(); }
+        ((org.openqa.selenium.JavascriptExecutor) getDriver())
+                .executeScript("arguments[0].click();", seat);
     }
 
     /**

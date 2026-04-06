@@ -4,6 +4,7 @@ import com.ticketing.pages.user.LoginPage;
 import com.ticketing.pages.events.EventsListPage;
 import com.ticketing.pages.events.EventDetailsPage;
 import com.ticketing.pages.waitlist.WaitlistPage;
+import com.ticketing.pages.waitlist.WaitlistManagementPage;
 import net.serenitybdd.annotations.Step;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,6 +16,7 @@ public class WaitlistSteps {
     private EventsListPage eventsListPage;
     private EventDetailsPage eventDetailsPage;
     private WaitlistPage waitlistPage;
+    private WaitlistManagementPage waitlistManagementPage;
 
     // ========================================================================
     // Authentication
@@ -161,6 +163,35 @@ public class WaitlistSteps {
         String actualMessage = waitlistPage.getToastMessage();
         logger.debug("Toast message: {}", actualMessage);
         return actualMessage.contains(expectedMessage);
+    }
+
+    // ========================================================================
+    // Waitlist Management Page (/waitlist)
+    // ========================================================================
+
+    @Step("Navigating to My Waitlist page")
+    public void navigateToWaitlistPage() {
+        logger.info("Navigating to /waitlist");
+        waitlistManagementPage.open();
+        if (!waitlistManagementPage.isPageLoaded()) {
+            throw new AssertionError("My Waitlist page failed to load");
+        }
+    }
+
+    @Step("Verifying waitlist entry exists for event: {0}")
+    public boolean verifyWaitlistEntryExists(String eventName) {
+        return waitlistManagementPage.hasEntryForEvent(eventName);
+    }
+
+    @Step("Cancelling waitlist entry for event: {0}")
+    public void cancelWaitlistEntry(String eventName) {
+        logger.info("Cancelling waitlist entry for: {}", eventName);
+        waitlistManagementPage.cancelEntryForEvent(eventName);
+    }
+
+    @Step("Verifying waitlist entry disappeared for event: {0}")
+    public boolean verifyWaitlistEntryDisappeared(String eventName) {
+        return waitlistManagementPage.waitForEntryToDisappear(eventName);
     }
 
     // ========================================================================

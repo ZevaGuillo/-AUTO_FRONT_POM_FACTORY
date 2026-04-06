@@ -26,8 +26,9 @@ public class WaitlistPage extends BasePage {
             "//span[@data-slot='badge' and contains(text(),'Position')]";
 
     // Duplicate error: "User is already in waitlist for this event and section"
-    @FindBy(css = "div.border-destructive\\/30.bg-destructive\\/10")
-    private WebElementFacade duplicateErrorMessage;
+    // Uses XPath because CSS selectors with '/' in class names are unreliable
+    private static final String DUPLICATE_ERROR_XPATH =
+            "//div[contains(@class,'border-destructive') and contains(@class,'bg-destructive') and contains(text(),'already in waitlist')]";
 
     // Seat reserved warning text in seat info panel
     @FindBy(css = "p.text-xs.text-amber-600")
@@ -95,14 +96,19 @@ public class WaitlistPage extends BasePage {
 
     public boolean isDuplicateErrorVisible() {
         try {
-            return isElementVisible(duplicateErrorMessage);
+            WebElement el = getDriver().findElement(By.xpath(DUPLICATE_ERROR_XPATH));
+            return el.isDisplayed();
         } catch (Exception e) {
             return false;
         }
     }
 
     public String getDuplicateErrorText() {
-        return getText(duplicateErrorMessage);
+        try {
+            return getDriver().findElement(By.xpath(DUPLICATE_ERROR_XPATH)).getText();
+        } catch (Exception e) {
+            return "";
+        }
     }
 
     // ========================================================================

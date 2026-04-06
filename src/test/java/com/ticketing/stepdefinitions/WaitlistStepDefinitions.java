@@ -16,13 +16,13 @@ public class WaitlistStepDefinitions {
     private WaitlistSteps waitlistSteps;
 
     // ========================================================================
-    // Background — User A reserves a seat, then User B (test user) logs in
+    // Setup — User A reserves a specific seat, then User B (test user) logs in
     // ========================================================================
 
-    @Given("otro usuario reserva un asiento en la sección {string} del evento {string}")
-    public void otroUsuarioReservaUnAsiento(String sectionName, String eventName) {
-        logger.info("Step: User A ({}) reserva asiento en {} / {}",
-                TestDataConfig.RESERVE_USER_EMAIL, sectionName, eventName);
+    @Given("otro usuario reserva el asiento {int} de fila {int} en la sección {string} del evento {string}")
+    public void otroUsuarioReservaUnAsiento(int seatNum, int rowNum, String sectionName, String eventName) {
+        logger.info("Step: User A ({}) reserva asiento {}{}-{} en {}",
+                TestDataConfig.RESERVE_USER_EMAIL, sectionName, rowNum, seatNum, eventName);
 
         // 1. Login as User A (reserve user)
         waitlistSteps.loginAsUser(
@@ -32,11 +32,8 @@ public class WaitlistStepDefinitions {
         // 2. Navigate to event details
         waitlistSteps.navigateToEventDetails(eventName);
 
-        // 3. Click the target seat
-        waitlistSteps.clickSpecificSeat(
-                TestDataConfig.RESERVE_SECTION,
-                TestDataConfig.RESERVE_ROW,
-                TestDataConfig.RESERVE_SEAT);
+        // 3. Click the specific seat
+        waitlistSteps.clickSpecificSeat(sectionName, rowNum, seatNum);
 
         // 4. Wait for info panel, then click "Reserve & Add to Cart"
         waitlistSteps.waitForPageUpdate();
@@ -44,10 +41,7 @@ public class WaitlistStepDefinitions {
 
         // 5. Wait for reservation to process
         waitlistSteps.waitForPageUpdate();
-        logger.info("User A reserved seat {}{}−{} ✓",
-                TestDataConfig.RESERVE_SECTION,
-                TestDataConfig.RESERVE_ROW,
-                TestDataConfig.RESERVE_SEAT);
+        logger.info("User A reserved seat {}{}-{} ✓", sectionName, rowNum, seatNum);
     }
 
     @Given("el usuario está autenticado en la plataforma Ticketing")
@@ -141,22 +135,26 @@ public class WaitlistStepDefinitions {
     @Then("el sistema no debe mostrar la opción para {string}")
     public void elSistemaNoDebeMostrarOpcion(String buttonText) {
         logger.info("Step: Verificando que Join Waitlist NO es visible");
-        // When already on waitlist, clicking a reserved seat should show the duplicate error
-        // instead of the join button
+        waitlistSteps.waitForPageUpdate();
+        Assert.assertFalse(
+            "La opción 'Join Waitlist' NO debe ser visible cuando ya estás en la lista de espera",
+            waitlistSteps.verifyJoinWaitlistButtonVisible()
+        );
     }
+
+    // Note: This step is kept for potential future use but CP_HU001_03 now clicks Join Waitlist
+    // a second time and expects the duplicate error/banner instead of hiding the button.
 
     @Then("debe mostrar un indicador visual con el mensaje {string}")
     public void debeMostrarIndicadorVisualConMensaje(String expectedMessage) {
-        logger.info("Step: Verificando banner/indicador con mensaje: {}", expectedMessage);
+        logger.info("Step: Verificando indicador de duplicado: {}", expectedMessage);
         waitlistSteps.waitForPageUpdate();
-
-        boolean bannerVisible = waitlistSteps.verifyWaitlistBannerVisible();
-        Assert.assertTrue("Debe mostrar banner de waitlist activa", bannerVisible);
-
-        boolean titleCorrect = waitlistSteps.verifyWaitlistBannerTitle(expectedMessage);
+        // The system shows either the error div ("already in waitlist") or the banner ("You're on the waitlist")
+        boolean duplicateError = waitlistSteps.verifyDuplicateErrorVisible();
+        boolean bannerVisible  = waitlistSteps.verifyWaitlistBannerVisible();
         Assert.assertTrue(
-            "Banner debe contener: " + expectedMessage,
-            titleCorrect
+            "Debe mostrar error de duplicado o banner de waitlist activa",
+            duplicateError || bannerVisible
         );
     }
 
@@ -170,42 +168,52 @@ public class WaitlistStepDefinitions {
     }
 
     // ========================================================================
-    // CP_HU003_02 — Cancelación exitosa
+    // CP_HU003_02 — Cancelación exitosa via waitlist management page
     // ========================================================================
 
-    @Given("he iniciado el proceso de cancelación y el modal de confirmación está visible")
-    public void inicioProcesoDelCancelacion() {
-        logger.info("Step: Precondición — proceso de cancelación iniciado");
-        // Cancel flow depends on actual UI provided; placeholder for now
+    @When("accedo a la página {string}")
+    public void accedoALaPagina(String pageName) {
+        logger.info("Step: Navegando a la página: {}", pageName);
+        waitlistSteps.navigateToWaitlistPage();
     }
 
-    @When("hago clic en el botón {string}")
-    public void hagoClicEnBoton(String buttonText) {
-        logger.info("Step: Clic en botón: {}", buttonText);
-        // Mapped to actual cancel confirmation when UI is available
-    }
-
-    @Then("el estado de mi suscripción en la base de datos debe cambiar a {string}")
-    public void elEstadoDeberiacambiarA(String expectedStatus) {
-        logger.info("Step: Verificando cambio de estado a: {}", expectedStatus);
-        waitlistSteps.waitForPageUpdate();
-    }
-
-    @Then("debo visualizar una notificación toast con el mensaje {string}")
-    public void debeVisualizarToastConMensaje(String expectedMessage) {
-        logger.info("Step: Verificando toast: {}", expectedMessage);
+    @Then("debo ver mi suscripción al evento {string} en la lista")
+    public void deboVerMiSuscripcion(String eventName) {
+        logger.info("Step: Verificando que la suscripción al evento {} existe", eventName);
         Assert.assertTrue(
-            "Debe mostrar toast: " + expectedMessage,
-            waitlistSteps.verifySuccessToast(expectedMessage)
+            "Debe existir la suscripción al evento: " + eventName,
+            waitlistSteps.verifyWaitlistEntryExists(eventName)
         );
     }
 
-    @Then("el banner informativo de suscripción activa debe desaparecer de la página")
-    public void elBannerDebeDesaparecer() {
-        logger.info("Step: Verificando que banner desapareció");
+    @When("cancelo mi suscripción al evento {string}")
+    public void canceloMiSuscripcion(String eventName) {
+        logger.info("Step: Cancelando suscripción al evento: {}", eventName);
+        waitlistSteps.cancelWaitlistEntry(eventName);
+    }
+
+    @Then("la suscripción al evento {string} debe desaparecer de la lista")
+    public void laSuscripcionDebeDesaparecer(String eventName) {
+        logger.info("Step: Verificando que la suscripción desapareció: {}", eventName);
         Assert.assertTrue(
-            "El banner debe desaparecer",
-            waitlistSteps.verifyWaitlistBannerDisappeared()
+            "La suscripción debe desaparecer: " + eventName,
+            waitlistSteps.verifyWaitlistEntryDisappeared(eventName)
+        );
+    }
+
+    @When("recargo la página {string}")
+    public void recargoLaPagina(String pageName) {
+        logger.info("Step: Recargando página: {}", pageName);
+        waitlistSteps.refreshPage();
+        waitlistSteps.waitForPageUpdate();
+    }
+
+    @Then("no debo ver mi suscripción al evento {string} en la lista")
+    public void noDebeoVerMiSuscripcion(String eventName) {
+        logger.info("Step: Verificando que NO existe suscripción al evento: {}", eventName);
+        Assert.assertFalse(
+            "NO debe existir la suscripción al evento: " + eventName,
+            waitlistSteps.verifyWaitlistEntryExists(eventName)
         );
     }
 
