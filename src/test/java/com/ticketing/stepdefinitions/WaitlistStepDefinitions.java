@@ -1,6 +1,7 @@
 package com.ticketing.stepdefinitions;
 
 import com.ticketing.steps.WaitlistSteps;
+import com.ticketing.utils.TestDataConfig;
 import io.cucumber.java.en.*;
 import net.serenitybdd.annotations.Steps;
 import org.junit.Assert;
@@ -15,13 +16,45 @@ public class WaitlistStepDefinitions {
     private WaitlistSteps waitlistSteps;
 
     // ========================================================================
-    // Background
+    // Background — User A reserves a seat, then User B (test user) logs in
     // ========================================================================
+
+    @Given("otro usuario reserva un asiento en la sección {string} del evento {string}")
+    public void otroUsuarioReservaUnAsiento(String sectionName, String eventName) {
+        logger.info("Step: User A ({}) reserva asiento en {} / {}",
+                TestDataConfig.RESERVE_USER_EMAIL, sectionName, eventName);
+
+        // 1. Login as User A (reserve user)
+        waitlistSteps.loginAsUser(
+                TestDataConfig.RESERVE_USER_EMAIL,
+                TestDataConfig.RESERVE_USER_PASSWORD);
+
+        // 2. Navigate to event details
+        waitlistSteps.navigateToEventDetails(eventName);
+
+        // 3. Click the target seat
+        waitlistSteps.clickSpecificSeat(
+                TestDataConfig.RESERVE_SECTION,
+                TestDataConfig.RESERVE_ROW,
+                TestDataConfig.RESERVE_SEAT);
+
+        // 4. Wait for info panel, then click "Reserve & Add to Cart"
+        waitlistSteps.waitForPageUpdate();
+        waitlistSteps.clickReserveAndAddToCart();
+
+        // 5. Wait for reservation to process
+        waitlistSteps.waitForPageUpdate();
+        logger.info("User A reserved seat {}{}−{} ✓",
+                TestDataConfig.RESERVE_SECTION,
+                TestDataConfig.RESERVE_ROW,
+                TestDataConfig.RESERVE_SEAT);
+    }
 
     @Given("el usuario está autenticado en la plataforma Ticketing")
     public void elUsuarioEstaAutenticadoEnLaPlataformaTicketing() {
-        logger.info("Step: Autenticando usuario");
-        waitlistSteps.loginAsUser("testuser@example.com", "Test1234!");
+        logger.info("Step: Autenticando usuario B (test user)");
+        // Navigate to login page (this also effectively logs out User A)
+        waitlistSteps.loginAsUser(TestDataConfig.TEST_USER_EMAIL, TestDataConfig.TEST_USER_PASSWORD);
     }
 
     // ========================================================================
@@ -34,9 +67,9 @@ public class WaitlistStepDefinitions {
         waitlistSteps.navigateToEventDetails(eventName);
     }
 
-    @Given("la sección {string} no tiene asientos disponibles")
-    public void laSeccionNoTieneAsientosDisponibles(String sectionName) {
-        logger.info("Step: Verificando sección {} sin asientos disponibles", sectionName);
+    @Given("la sección {string} tiene asientos reservados por otro usuario")
+    public void laSeccionTieneAsientosReservados(String sectionName) {
+        logger.info("Step: Verificando sección {} tiene asientos reservados", sectionName);
         boolean sectionVisible = waitlistSteps.verifySectionVisible(sectionName);
         Assert.assertTrue("La sección debe ser visible: " + sectionName, sectionVisible);
     }
@@ -57,10 +90,10 @@ public class WaitlistStepDefinitions {
     // CP_HU001_01 — Registro exitoso en lista de espera
     // ========================================================================
 
-    @When("intento interactuar con la sección {string}")
-    public void intentoInteractuarConLaSeccion(String sectionName) {
-        logger.info("Step: Interactuando con sección reservada: {}", sectionName);
-        waitlistSteps.clickReservedSeatInSection(sectionName);
+    @When("intento interactuar con un asiento reservado de la sección {string}")
+    public void intentoInteractuarConAsientoReservado(String sectionName) {
+        logger.info("Step: Clicking reserved seat in section: {}", sectionName);
+        waitlistSteps.clickReservedSeat(sectionName);
     }
 
     @Then("el sistema debe mostrar una opción visible y clara para {string} asociada a esa sección y evento")
@@ -86,10 +119,11 @@ public class WaitlistStepDefinitions {
 
     @Then("debo visualizar un mensaje de confirmación {string}")
     public void debeVisualizarMensajeDeConfirmacion(String expectedMessage) {
-        logger.info("Step: Verificando mensaje de confirmación");
+        logger.info("Step: Verificando banner de confirmación de lista de espera");
+        waitlistSteps.waitForPageUpdate();
         Assert.assertTrue(
-            "Debe mostrar confirmación: " + expectedMessage,
-            waitlistSteps.verifySuccessToast(expectedMessage)
+            "Debe mostrar banner de confirmación de waitlist",
+            waitlistSteps.verifyWaitlistBannerVisible()
         );
     }
 

@@ -12,7 +12,7 @@ import org.junit.runner.RunWith;
 @RunWith(CucumberWithSerenity.class)
 @CucumberOptions(
         features = "src/test/resources/features",
-        glue = "com.ticketing.stepdefinitions",
+        glue = {"com.ticketing.stepdefinitions", "com.ticketing.hooks"},
         tags = "@smoke or @positive or @negative or @security",
         plugin = {
                 "pretty",

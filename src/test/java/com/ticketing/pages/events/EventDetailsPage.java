@@ -41,9 +41,34 @@ public class EventDetailsPage extends BasePage {
     @FindBy(css = "div.rounded-lg.border.border-accent\\/30 p.text-xs.text-amber-600")
     private WebElementFacade seatReservedWarning;
 
+    /**
+     * Waits for the event details page to fully render.
+     * Checks that the URL matches /events/{uuid} and that the h1
+     * contains actual event text (not the stale "Events" from the list page).
+     */
     public boolean isEventDetailsPageLoaded() {
         try {
-            return waitForElement(eventTitle).isDisplayed();
+            // 1. Wait for URL pattern
+            new org.openqa.selenium.support.ui.WebDriverWait(
+                    getDriver(), java.time.Duration.ofSeconds(15))
+                    .until(org.openqa.selenium.support.ui.ExpectedConditions
+                            .urlMatches(".*/events/[0-9a-fA-F-]+$"));
+
+            // 2. Wait for h1 to be visible
+            waitForElement(eventTitle);
+
+            // 3. Ensure it's NOT the stale list-page h1
+            String titleText = eventTitle.getText().trim();
+            if ("Events".equalsIgnoreCase(titleText) || titleText.isEmpty()) {
+                // SPA hasn't finished rendering — retry once after short delay
+                Thread.sleep(1000);
+                titleText = eventTitle.getText().trim();
+            }
+
+            boolean loaded = !titleText.isEmpty()
+                    && !"Events".equalsIgnoreCase(titleText);
+            logger.info("Event details page loaded: {} (title='{}')", loaded, titleText);
+            return loaded;
         } catch (Exception e) {
             logger.error("Event details page failed to load", e);
             return false;
@@ -123,6 +148,20 @@ public class EventDetailsPage extends BasePage {
     }
 
     /**
+     * Click the first seat in a given section regardless of status.
+     * Used when interacting with section to explore seat map / trigger UI.
+     */
+    public void clickFirstSeatInSection(String section) {
+        logger.info("Clicking first seat in section: {}", section);
+        String xpath = String.format("//button[contains(@aria-label, 'Seat %s')]", section);
+        List<WebElement> seats = getDriver().findElements(By.xpath(xpath));
+        if (seats.isEmpty()) {
+            throw new AssertionError("No seats found in section: " + section);
+        }
+        seats.get(0).click();
+    }
+
+    /**
      * Check if the seat info panel is visible (appears after clicking a seat).
      */
     public boolean isSeatInfoPanelVisible() {
@@ -170,5 +209,34 @@ public class EventDetailsPage extends BasePage {
      */
     public boolean sectionHasReservedSeats(String section) {
         return !findSeatsByStatus(section, "Reserved").isEmpty();
+    }
+
+    // ========================================================================
+    // Seat reservation ("Reserve & Add to Cart" button)
+    // ========================================================================
+
+    private static final String RESERVE_BUTTON_XPATH =
+            "//button[contains(text(), 'Reserve') and contains(text(), 'Add to Cart')]";
+
+    /**
+     * After clicking a seat, the info panel appears with "Reserve & Add to Cart".
+     * Clicks that button to reserve the selected seat.
+     */
+    public void clickReserveAndAddToCart() {
+        logger.info("Clicking 'Reserve & Add to Cart' button");
+        WebElement btn = waitForElement(By.xpath(RESERVE_BUTTON_XPATH));
+        btn.click();
+    }
+
+    /**
+     * Whether the "Reserve & Add to Cart" button is visible.
+     */
+    public boolean isReserveButtonVisible() {
+        try {
+            return !getDriver().findElements(By.xpath(RESERVE_BUTTON_XPATH)).isEmpty()
+                    && getDriver().findElement(By.xpath(RESERVE_BUTTON_XPATH)).isDisplayed();
+        } catch (Exception e) {
+            return false;
+        }
     }
 }

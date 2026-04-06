@@ -68,6 +68,34 @@ public class WaitlistSteps {
         eventDetailsPage.clickFirstReservedSeat(sectionName);
     }
 
+    @Step("Clicking first seat in section: {0}")
+    public void clickFirstSeatInSection(String sectionName) {
+        logger.info("Clicking first seat in section: {}", sectionName);
+        eventDetailsPage.clickFirstSeatInSection(sectionName);
+    }
+
+    // ========================================================================
+    // Seat reservation (User A flow)
+    // ========================================================================
+
+    @Step("Clicking seat {0} row {1} seat {2}")
+    public void clickSpecificSeat(String section, int row, int seat) {
+        logger.info("Clicking seat: {} row {} seat {}", section, row, seat);
+        eventDetailsPage.clickSeat(section, row, seat);
+    }
+
+    @Step("Clicking 'Reserve & Add to Cart' button")
+    public void clickReserveAndAddToCart() {
+        logger.info("Clicking Reserve & Add to Cart");
+        eventDetailsPage.clickReserveAndAddToCart();
+    }
+
+    @Step("Clicking reserved seat in section: {0}")
+    public void clickReservedSeat(String sectionName) {
+        logger.info("Clicking reserved seat in section: {}", sectionName);
+        eventDetailsPage.clickFirstReservedSeat(sectionName);
+    }
+
     // ========================================================================
     // Waitlist — Join
     // ========================================================================

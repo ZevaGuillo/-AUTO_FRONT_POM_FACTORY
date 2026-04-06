@@ -17,17 +17,13 @@ public class WaitlistPage extends BasePage {
     private static final String JOIN_WAITLIST_XPATH =
             "//button[contains(text(), 'Join Waitlist')]";
 
-    // Waitlist banner — amber box with "You're on the waitlist" text
-    @FindBy(css = "div.border-amber-200.bg-amber-50")
-    private WebElementFacade waitlistBanner;
+    // Waitlist banner title: "You're on the waitlist"
+    private static final String BANNER_TITLE_XPATH =
+            "//span[contains(@class,'font-medium') and contains(text(),\"You're on the waitlist\")]";
 
-    // Banner title text: "You're on the waitlist"
-    @FindBy(css = "div.border-amber-200 span.font-medium")
-    private WebElementFacade waitlistBannerTitle;
-
-    // Badge inside waitlist banner: "Section General: Position #1"
-    @FindBy(css = "div.border-amber-200 span[data-slot='badge']")
-    private WebElementFacade waitlistBadge;
+    // Badge inside waitlist banner: "Section General: Position #2"
+    private static final String BANNER_BADGE_XPATH =
+            "//span[@data-slot='badge' and contains(text(),'Position')]";
 
     // Duplicate error: "User is already in waitlist for this event and section"
     @FindBy(css = "div.border-destructive\\/30.bg-destructive\\/10")
@@ -67,7 +63,8 @@ public class WaitlistPage extends BasePage {
 
     public boolean isWaitlistBannerVisible() {
         try {
-            return isElementVisible(waitlistBanner);
+            WebElement title = waitForElement(By.xpath(BANNER_TITLE_XPATH));
+            return title.isDisplayed();
         } catch (Exception e) {
             logger.debug("Waitlist banner not visible");
             return false;
@@ -75,11 +72,21 @@ public class WaitlistPage extends BasePage {
     }
 
     public String getWaitlistBannerTitle() {
-        return getText(waitlistBannerTitle);
+        try {
+            WebElement title = getDriver().findElement(By.xpath(BANNER_TITLE_XPATH));
+            return title.getText();
+        } catch (Exception e) {
+            return "";
+        }
     }
 
     public String getWaitlistBadgeText() {
-        return getText(waitlistBadge);
+        try {
+            WebElement badge = getDriver().findElement(By.xpath(BANNER_BADGE_XPATH));
+            return badge.getText();
+        } catch (Exception e) {
+            return "";
+        }
     }
 
     // ========================================================================
