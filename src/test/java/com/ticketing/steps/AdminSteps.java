@@ -6,10 +6,6 @@ import com.ticketing.pages.admin.CreateEventPage;
 import com.ticketing.utils.TestUtils;
 import net.serenitybdd.annotations.Step;
 
-/**
- * Steps class for Admin related actions
- * Acts as orchestrator between StepDefinitions and PageObjects
- */
 public class AdminSteps {
     
     private AdminLoginPage adminLoginPage;

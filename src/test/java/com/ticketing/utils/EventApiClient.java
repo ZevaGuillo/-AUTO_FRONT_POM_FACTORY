@@ -11,15 +11,6 @@ import java.time.Duration;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-/**
- * HTTP client for creating / querying events and generating seats
- * via the Catalog admin API through the API Gateway.
- *
- * Routes:
- *   POST /catalog/admin/events                — create event (no auth)
- *   GET  /catalog/admin/events                — list events  (no auth)
- *   POST /catalog/admin/events/{id}/seats     — generate seats (no auth)
- */
 public final class EventApiClient {
 
     private static final Logger logger = LoggerFactory.getLogger(EventApiClient.class);
@@ -28,19 +19,14 @@ public final class EventApiClient {
             .connectTimeout(Duration.ofSeconds(TestDataConfig.HTTP_TIMEOUT_SECONDS))
             .build();
 
-    /** Catalog admin events endpoint */
     private static final String EVENTS_ADMIN_URL =
             System.getProperty("admin.events.api.url",
                     TestDataConfig.CATALOG_BASE_URL + "/admin/events");
 
-    /** Cached admin token for all catalog admin requests. */
     private static volatile String adminToken;
 
-    private EventApiClient() { /* utility class */ }
+    private EventApiClient() { }
 
-    /**
-     * Set the admin JWT token used for catalog admin API calls.
-     */
     public static void setAdminToken(String token) {
         adminToken = token;
     }
@@ -49,12 +35,6 @@ public final class EventApiClient {
         return adminToken;
     }
 
-    // ── Check if event exists ──────────────────────────────────────────────
-
-    /**
-     * GET /catalog/admin/events — checks if an event with the given name
-     * already exists by searching the events list response body.
-     */
     public static boolean eventExists(String eventName) {
         try {
             HttpResponse<String> response = doGet(EVENTS_ADMIN_URL);
@@ -71,14 +51,6 @@ public final class EventApiClient {
         }
     }
 
-    // ── Get event ID by name ───────────────────────────────────────────────
-
-    /**
-     * GET /catalog/admin/events — finds the UUID of an event by its name.
-     * Parses the JSON array looking for {@code "id":"<uuid>"} near the name.
-     *
-     * @return the event UUID or {@code null} if not found.
-     */
     public static String getEventId(String eventName) {
         try {
             HttpResponse<String> response = doGet(EVENTS_ADMIN_URL);
@@ -93,13 +65,6 @@ public final class EventApiClient {
         }
     }
 
-    // ── Create event ──────────────────────────────────────────────────────
-
-    /**
-     * POST /catalog/admin/events — creates a new event. No auth required.
-     *
-     * @return the event UUID from the response, or {@code null} on failure.
-     */
     public static String createEvent(String name,
                                      String description,
                                      String eventDate,
@@ -148,13 +113,6 @@ public final class EventApiClient {
         }
     }
 
-    // ── Generate seats ────────────────────────────────────────────────────
-
-    /**
-     * POST /catalog/admin/events/{eventId}/seats — generates seat map.
-     *
-     * @return true on 2xx or if seats already exist (idempotent).
-     */
     public static boolean generateSeats(String eventId) {
         String seatsUrl = EVENTS_ADMIN_URL + "/" + eventId + "/seats";
 
@@ -197,22 +155,15 @@ public final class EventApiClient {
         }
     }
 
-    // ── Convenience: create event + seats ─────────────────────────────────
-
-    /**
-     * Creates the waitlist test event (if absent) and generates its seats.
-     */
     public static boolean createWaitlistEventIfAbsent() {
         String name = TestDataConfig.WAITLIST_EVENT_NAME;
 
         String eventId;
 
-        // 1. Check if event already exists → get its ID
         if (eventExists(name)) {
             logger.info("Event '{}' already exists — fetching ID.", name);
             eventId = getEventId(name);
         } else {
-            // 2. Create the event → ID comes from response
             eventId = createEvent(
                     name,
                     TestDataConfig.WAITLIST_EVENT_DESCRIPTION,
@@ -230,11 +181,8 @@ public final class EventApiClient {
 
         logger.info("Event '{}' ID = {}", name, eventId);
 
-        // 3. Generate seats
         return generateSeats(eventId);
     }
-
-    // ── Internal helpers ──────────────────────────────────────────────────
 
     private static HttpResponse<String> doGet(String url) throws Exception {
         HttpRequest.Builder reqBuilder = HttpRequest.newBuilder()
@@ -248,15 +196,12 @@ public final class EventApiClient {
         return HTTP.send(reqBuilder.build(), HttpResponse.BodyHandlers.ofString());
     }
 
-    /** Extracts the first UUID-shaped "id" value from a JSON string. */
     private static String extractId(String json) {
-        // Matches "id":"<uuid>" or "id": "<uuid>"
         Pattern pattern = Pattern.compile("\"id\"\\s*:\\s*\"([0-9a-fA-F-]{36})\"");
         Matcher matcher = pattern.matcher(json);
         if (matcher.find()) {
             return matcher.group(1);
         }
-        // Fallback: try numeric id
         Pattern numPattern = Pattern.compile("\"id\"\\s*:\\s*(\\d+)");
         Matcher numMatcher = numPattern.matcher(json);
         if (numMatcher.find()) {
@@ -267,15 +212,7 @@ public final class EventApiClient {
         return null;
     }
 
-    /**
-     * Given a JSON array of events, finds the "id" of the event whose
-     * "name" matches {@code eventName}.
-     *
-     * Simple approach: split by each object boundary, find the one
-     * containing the name, then extract its id.
-     */
     private static String extractIdByName(String json, String eventName) {
-        // Split into rough object chunks
         String[] chunks = json.split("\\{");
         for (String chunk : chunks) {
             if (chunk.contains(eventName)) {

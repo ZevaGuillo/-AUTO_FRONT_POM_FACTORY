@@ -6,41 +6,26 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
 
-/**
- * Page Object for Waitlist-specific UI components on the Event Details page.
- * Handles: Join Waitlist button, waitlist banner, duplicate error message,
- * and toast notifications.
- */
 public class WaitlistPage extends BasePage {
 
-    // "Join Waitlist" button (amber-styled, inside the seat info panel)
     private static final String JOIN_WAITLIST_XPATH =
             "//button[contains(text(), 'Join Waitlist')]";
 
-    // Waitlist banner title: "You're on the waitlist"
     private static final String BANNER_TITLE_XPATH =
             "//span[contains(@class,'font-medium') and contains(text(),\"You're on the waitlist\")]";
 
-    // Badge inside waitlist banner: "Section General: Position #2"
     private static final String BANNER_BADGE_XPATH =
             "//span[@data-slot='badge' and contains(text(),'Position')]";
 
-    // Duplicate error: "User is already in waitlist for this event and section"
-    // Uses XPath because CSS selectors with '/' in class names are unreliable
     private static final String DUPLICATE_ERROR_XPATH =
             "//div[contains(@class,'border-destructive') and contains(@class,'bg-destructive') and contains(text(),'already in waitlist')]";
 
-    // Seat reserved warning text in seat info panel
     @FindBy(css = "p.text-xs.text-amber-600")
     private WebElementFacade seatReservedWarning;
 
-    // Toast notification (generic — Sonner or similar)
     @FindBy(css = "[data-sonner-toast], [role='status'], .toast-notification")
     private WebElementFacade toastNotification;
 
-    // ========================================================================
-    // Join Waitlist
-    // ========================================================================
 
     private static final String WAITLIST_BUTTON_XPATH =
             "//button[contains(text(), 'Join Waitlist') or contains(text(), 'On Waitlist')]";
@@ -80,9 +65,6 @@ public class WaitlistPage extends BasePage {
         }
     }
 
-    // ========================================================================
-    // Waitlist Banner (visible when already subscribed)
-    // ========================================================================
 
     public boolean isWaitlistBannerVisible() {
         try {
@@ -112,10 +94,6 @@ public class WaitlistPage extends BasePage {
         }
     }
 
-    // ========================================================================
-    // Duplicate error message
-    // ========================================================================
-
     public boolean isDuplicateErrorVisible() {
         try {
             WebElement el = getDriver().findElement(By.xpath(DUPLICATE_ERROR_XPATH));
@@ -132,10 +110,6 @@ public class WaitlistPage extends BasePage {
             return "";
         }
     }
-
-    // ========================================================================
-    // Toast notifications
-    // ========================================================================
 
     public boolean isToastVisible() {
         try {

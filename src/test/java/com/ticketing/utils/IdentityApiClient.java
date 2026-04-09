@@ -9,16 +9,6 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
 
-/**
- * Lightweight HTTP client for Identity Service (localhost:50000).
- *
- * Responsibilities:
- *  • Create users        (POST /users)
- *  • Obtain JWT tokens   (POST /token)
- *
- * Stateless — every method receives the parameters it needs.
- * Uses java.net.http.HttpClient (built-in since Java 11).
- */
 public final class IdentityApiClient {
 
     private static final Logger logger = LoggerFactory.getLogger(IdentityApiClient.class);
@@ -27,14 +17,8 @@ public final class IdentityApiClient {
             .connectTimeout(Duration.ofSeconds(TestDataConfig.HTTP_TIMEOUT_SECONDS))
             .build();
 
-    private IdentityApiClient() { /* utility class */ }
+    private IdentityApiClient() { }
 
-    // ── Create user ────────────────────────────────────────────────────────
-
-    /**
-     * POST /register — creates a new user.
-     * Returns true if 201 (created) or 400 (already exists — idempotent).
-     */
     public static boolean createUser(String email, String password, String role) {
         String body = String.format(
                 "{\"email\":\"%s\",\"password\":\"%s\",\"role\":\"%s\"}",
@@ -68,12 +52,6 @@ public final class IdentityApiClient {
         }
     }
 
-    // ── Get token ──────────────────────────────────────────────────────────
-
-    /**
-     * POST /token — exchanges email + password for a JWT.
-     * Returns the raw token string, or null on failure.
-     */
     public static String getToken(String email, String password) {
         String body = String.format(
                 "{\"email\":\"%s\",\"password\":\"%s\"}",
@@ -91,7 +69,6 @@ public final class IdentityApiClient {
             HttpResponse<String> response = HTTP.send(request, HttpResponse.BodyHandlers.ofString());
 
             if (response.statusCode() == 200) {
-                // Minimal JSON extraction — avoids external dependency
                 String token = extractJsonValue(response.body(), "token");
                 logger.info("Token obtained for {}", email);
                 return token;
@@ -106,11 +83,6 @@ public final class IdentityApiClient {
         }
     }
 
-    // ── Health check ───────────────────────────────────────────────────────
-
-    /**
-     * GET /health — quick connectivity test.
-     */
     public static boolean isHealthy() {
         try {
             HttpRequest request = HttpRequest.newBuilder()
@@ -128,12 +100,6 @@ public final class IdentityApiClient {
         }
     }
 
-    // ── Helpers ────────────────────────────────────────────────────────────
-
-    /**
-     * Extracts a simple string value from a flat JSON object.
-     * Example: {"token":"abc123"} → extractJsonValue(json, "token") → "abc123"
-     */
     static String extractJsonValue(String json, String key) {
         String pattern = "\"" + key + "\"";
         int keyIdx = json.indexOf(pattern);

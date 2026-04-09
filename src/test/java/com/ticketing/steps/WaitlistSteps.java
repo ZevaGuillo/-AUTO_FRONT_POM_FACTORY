@@ -87,20 +87,12 @@ public class WaitlistSteps {
         logger.info("Event setup complete - section {} should now have 1 reserved seat", sectionName);
     }
 
-    // ========================================================================
-    // Authentication
-    // ========================================================================
-
     @Step("Logging in as user {0}")
     public void loginAsUser(String email, String password) {
         logger.info("Logging in as user: {}", email);
         loginPage.open();
         loginPage.loginAs(email, password);
     }
-
-    // ========================================================================
-    // Navigation
-    // ========================================================================
 
     @Step("Navigating to events list and selecting event: {0}")
     public void navigateToEventDetails(String eventName) {
@@ -118,10 +110,6 @@ public class WaitlistSteps {
         return eventDetailsPage.isEventDetailsPageLoaded()
             && eventDetailsPage.getEventName().contains(eventName);
     }
-
-    // ========================================================================
-    // Section & Seat interactions
-    // ========================================================================
 
     @Step("Verifying section {0} is visible")
     public boolean verifySectionVisible(String sectionName) {
@@ -145,10 +133,6 @@ public class WaitlistSteps {
         eventDetailsPage.clickFirstSeatInSection(sectionName);
     }
 
-    // ========================================================================
-    // Seat reservation (User A flow)
-    // ========================================================================
-
     @Step("Clicking seat {0} row {1} seat {2}")
     public void clickSpecificSeat(String section, int row, int seat) {
         logger.info("Clicking seat: {} row {} seat {}", section, row, seat);
@@ -166,10 +150,6 @@ public class WaitlistSteps {
         logger.info("Clicking reserved seat in section: {}", sectionName);
         eventDetailsPage.clickFirstReservedSeat(sectionName);
     }
-
-    // ========================================================================
-    // Waitlist — Join
-    // ========================================================================
 
     @Step("Verifying Join Waitlist button is visible")
     public boolean verifyJoinWaitlistButtonVisible() {
@@ -194,10 +174,6 @@ public class WaitlistSteps {
         return waitlistPage.getJoinWaitlistButtonText();
     }
 
-    // ========================================================================
-    // Waitlist Banner
-    // ========================================================================
-
     @Step("Verifying waitlist banner is visible")
     public boolean verifyWaitlistBannerVisible() {
         return waitlistPage.isWaitlistBannerVisible();
@@ -215,18 +191,10 @@ public class WaitlistSteps {
         return !waitlistPage.isWaitlistBannerVisible();
     }
 
-    // ========================================================================
-    // Duplicate error
-    // ========================================================================
-
     @Step("Verifying duplicate error message is visible")
     public boolean verifyDuplicateErrorVisible() {
         return waitlistPage.isDuplicateErrorVisible();
     }
-
-    // ========================================================================
-    // Toast notifications
-    // ========================================================================
 
     @Step("Verifying toast notification with message: {0}")
     public boolean verifySuccessToast(String expectedMessage) {
@@ -238,10 +206,6 @@ public class WaitlistSteps {
         logger.debug("Toast message: {}", actualMessage);
         return actualMessage.contains(expectedMessage);
     }
-
-    // ========================================================================
-    // Helpers
-    // ========================================================================
 
     @Step("Waiting for page update")
     public void waitForPageUpdate() {

@@ -10,17 +10,11 @@ import java.util.Map;
 
 import org.junit.Assert;
 
-/**
- * Step Definitions for Admin related scenarios
- * Maps Gherkin steps to AdminSteps methods
- * Refactored to include only essential steps for main admin scenarios
- */
 public class AdminStepDefinitions {
 
     @Steps
     private AdminSteps adminSteps;
 
-    // Background step
     @Given("the ticketing system admin panel is available")
     public void theTicketingSystemAdminPanelIsAvailable() {
         adminSteps.navigateToAdminLogin();
@@ -28,13 +22,11 @@ public class AdminStepDefinitions {
         Assert.assertTrue("El panel de admin debe estar disponible", loginPageLoaded);
     }
 
-    // Navigation to admin login
     @Given("el usuario navega a la página de login de admin")
     public void elUsuarioNavegaALaPaginaDeLoginDeAdmin() {
         adminSteps.navigateToAdminLogin();
     }
 
-    // Authentication steps for login scenario
     @When("ingresa credenciales válidas de administrador")
     public void ingresaCredencialesValidasDeAdministrador() {
         adminSteps.loginAsAdminWithDefaults();
@@ -58,7 +50,6 @@ public class AdminStepDefinitions {
         Assert.assertTrue("Debe mostrar el panel de navegación de admin", dashboardLoaded);
     }
 
-    // Event creation scenario steps
     @Given("el administrador está autenticado")
     public void elAdministradorEstaAutenticado() {
         adminSteps.completeAdminLoginAndNavigateToDashboard();
@@ -98,17 +89,12 @@ public class AdminStepDefinitions {
 
     @Then("debe aparecer en la lista de eventos")
     public void debeAparecerEnLaListaDeEventos() {
-        // This would be implemented in the AdminSteps class
-        // For now, we verify that the event was created successfully
         boolean eventCreated = adminSteps.verifyEventCreationSuccessful();
         Assert.assertTrue("El evento debe aparecer en la lista", eventCreated);
     }
 
-    // Security/Unauthorized access scenario steps
     @Given("un usuario no está autenticado como administrador")
     public void unUsuarioNoEstaAutenticadoComoAdministrador() {
-        // Ensure no admin session exists
-        // This step represents starting with no authentication
         Assert.assertNotNull("AdminSteps should be initialized", adminSteps);
     }
 

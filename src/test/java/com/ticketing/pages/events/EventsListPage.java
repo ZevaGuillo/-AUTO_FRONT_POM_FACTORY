@@ -37,9 +37,6 @@ public class EventsListPage extends BasePage {
         return eventCards.size();
     }
 
-    /**
-     * Wait until at least one event card is rendered (async API fetch).
-     */
     private void waitForEventCards() {
         logger.debug("Waiting for event cards to load");
         new WebDriverWait(getDriver(), Duration.ofSeconds(PAGE_TIMEOUT))
@@ -47,10 +44,6 @@ public class EventsListPage extends BasePage {
                         By.cssSelector("[data-slot='card']")));
     }
 
-    /**
-     * Find an event card by its title text and click "Select Seats".
-     * Waits for cards to render and for URL change after click.
-     */
     public void selectEventByName(String eventName) {
         logger.info("Selecting event: {}", eventName);
         waitForEventCards();
@@ -62,7 +55,6 @@ public class EventsListPage extends BasePage {
                         By.cssSelector("a[href^='/events/']"));
                 selectSeatsLink.click();
 
-                // Wait for SPA navigation: URL must change to /events/{uuid}
                 new WebDriverWait(getDriver(), Duration.ofSeconds(PAGE_TIMEOUT))
                         .until(ExpectedConditions.urlContains("/events/"));
                 logger.info("Navigated to: {}", getDriver().getCurrentUrl());
@@ -72,9 +64,6 @@ public class EventsListPage extends BasePage {
         throw new AssertionError("Event not found in list: " + eventName);
     }
 
-    /**
-     * Check if an event with the given name exists in the list
-     */
     public boolean isEventVisible(String eventName) {
         waitForEventCards();
         for (WebElementFacade card : eventCards) {
