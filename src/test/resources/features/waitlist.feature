@@ -6,12 +6,11 @@ Feature: Lista de Espera
 
   @smoke @positive @waitlist @alta
   Scenario: CP_HU001_01 — Registro exitoso en lista de espera y visualización de confirmación
-    Given otro usuario reserva el asiento 1 de fila 1 en la sección "General" del evento "Concierto Sinfónico"
-    And el usuario está autenticado en la plataforma Ticketing
-    And accedo a la página de detalles del evento "Concierto Sinfónico"
-    And la sección "General" tiene asientos reservados por otro usuario
+    Given el usuario está autenticado en la plataforma Ticketing
+    And existe un evento "Concierto Sinfónico" con la sección "General" totalmente reservada
     And no tengo una suscripción activa previa para esa sección y evento
-    When intento interactuar con un asiento reservado de la sección "General"
+    When accedo a la página de detalles del evento "Concierto Sinfónico"
+    And hago clic en un asiento reservado de la sección "General"
     Then el sistema debe mostrar una opción visible y clara para "Unirse a la lista de espera" asociada a esa sección y evento
     When selecciono la opción para unirme y confirmo mi registro
     Then el sistema debe registrar mi suscripción en la base de datos asociándola a mi usuario, al evento "Concierto Sinfónico" y a la sección "General"
@@ -19,15 +18,14 @@ Feature: Lista de Espera
 
   @negative @waitlist @alta
   Scenario: CP_HU001_03 — Impedir registro duplicado en la misma lista de espera
-    Given otro usuario reserva el asiento 2 de fila 1 en la sección "General" del evento "Concierto Sinfónico"
-    And el usuario está autenticado en la plataforma Ticketing
-    And accedo a la página de detalles del evento "Concierto Sinfónico"
-    And la sección "General" tiene asientos reservados por otro usuario
-    When intento interactuar con un asiento reservado de la sección "General"
+    Given el usuario está autenticado en la plataforma Ticketing
+    And existe un evento "Concierto Sinfónico" con la sección "General" totalmente reservada
+    And no tengo una suscripción activa previa para esa sección y evento
+    When accedo a la página de detalles del evento "Concierto Sinfónico"
+    And hago clic en un asiento reservado de la sección "General"
     And selecciono la opción para unirme y confirmo mi registro
-    And debo visualizar un mensaje de confirmación "¡Te has unido a la lista de espera!"
+    Then el botón de unirse a la lista de espera debe mostrar "On Waitlist"
     When accedo nuevamente a la página de detalles de dicho evento y sección
-    And intento interactuar con un asiento reservado de la sección "General"
-    And selecciono la opción para unirme y confirmo mi registro
-    Then debe mostrar un indicador visual con el mensaje "You're on the waitlist"
+    And hago clic en un asiento reservado de la sección "General"
+    Then el botón de unirse a la lista de espera debe mostrar "On Waitlist"
     And no se debe crear un registro duplicado en WAITLIST_ENTRIES

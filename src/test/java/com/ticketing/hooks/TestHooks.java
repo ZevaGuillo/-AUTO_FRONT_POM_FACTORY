@@ -62,58 +62,59 @@ public class TestHooks {
         if (!IdentityApiClient.isHealthy()) {
             logger.error("Identity Service unreachable at {}", TestDataConfig.IDENTITY_BASE_URL);
             throw new IllegalStateException(
-                    "Identity Service unreachable: " + TestDataConfig.IDENTITY_BASE_URL);
+                "Identity Service unreachable: " + TestDataConfig.IDENTITY_BASE_URL);
         }
         logger.info("Identity Service healthy ✓");
 
         // 2. Create test user  (POST /auth/register)
         boolean userCreated = IdentityApiClient.createUser(
-                TestDataConfig.TEST_USER_EMAIL,
-                TestDataConfig.TEST_USER_PASSWORD,
-                TestDataConfig.TEST_USER_ROLE);
+            TestDataConfig.TEST_USER_EMAIL,
+            TestDataConfig.TEST_USER_PASSWORD,
+            TestDataConfig.TEST_USER_ROLE);
         if (!userCreated) {
             throw new IllegalStateException(
-                    "Could not create test user: " + TestDataConfig.TEST_USER_EMAIL);
+                "Could not create test user: " + TestDataConfig.TEST_USER_EMAIL);
         }
         logger.info("Test user ready: {} ✓", TestDataConfig.TEST_USER_EMAIL);
 
         // 3. Cache user token for @After cleanup  (POST /auth/token)
         testUserToken = IdentityApiClient.getToken(
-                TestDataConfig.TEST_USER_EMAIL,
-                TestDataConfig.TEST_USER_PASSWORD);
+            TestDataConfig.TEST_USER_EMAIL,
+            TestDataConfig.TEST_USER_PASSWORD);
         if (testUserToken != null) {
             logger.info("Test user token cached for cleanup ✓");
         }
 
         // 4. Create reserve user (User A — will reserve a seat so User B sees 'Reserved')
         boolean reserveUserCreated = IdentityApiClient.createUser(
-                TestDataConfig.RESERVE_USER_EMAIL,
-                TestDataConfig.RESERVE_USER_PASSWORD,
-                TestDataConfig.RESERVE_USER_ROLE);
+            TestDataConfig.RESERVE_USER_EMAIL,
+            TestDataConfig.RESERVE_USER_PASSWORD,
+            TestDataConfig.RESERVE_USER_ROLE);
         if (!reserveUserCreated) {
             throw new IllegalStateException(
-                    "Could not create reserve user: " + TestDataConfig.RESERVE_USER_EMAIL);
+                "Could not create reserve user: " + TestDataConfig.RESERVE_USER_EMAIL);
         }
         logger.info("Reserve user ready: {} ✓", TestDataConfig.RESERVE_USER_EMAIL);
 
         // 5. Create admin user  (POST /auth/register)
         IdentityApiClient.createUser(
-                TestDataConfig.ADMIN_EMAIL,
-                TestDataConfig.ADMIN_PASSWORD,
-                TestDataConfig.ADMIN_ROLE);
+            TestDataConfig.ADMIN_EMAIL,
+            TestDataConfig.ADMIN_PASSWORD,
+            TestDataConfig.ADMIN_ROLE);
         logger.info("Admin user ready: {} ✓", TestDataConfig.ADMIN_EMAIL);
 
-        // 5. Create event via Catalog admin API  (POST /catalog/admin/events)
-        //    No auth required — checks existence first to avoid duplicates
-        boolean eventCreated = EventApiClient.createWaitlistEventIfAbsent();
-        if (eventCreated) {
-            logger.info("Waitlist event '{}' ready ✓",
-                    TestDataConfig.WAITLIST_EVENT_NAME);
+        // 5b. Get admin token for catalog admin API calls
+        String adminToken = IdentityApiClient.getToken(
+            TestDataConfig.ADMIN_EMAIL,
+            TestDataConfig.ADMIN_PASSWORD);
+        if (adminToken != null) {
+            EventApiClient.setAdminToken(adminToken);
+            logger.info("Admin token set for EventApiClient ✓");
         } else {
-            throw new IllegalStateException(
-                    "Could not create event '" + TestDataConfig.WAITLIST_EVENT_NAME
-                    + "' via Catalog API. Check gateway and catalog service.");
+            logger.warn("Could not obtain admin token — event creation may fail.");
         }
+
+        // NOTA: La generación de asientos y reserva se realiza en el step definition para permitir 1 asiento reservado por sección.
 
         dataSeeded = true;
         logger.info("═══ Data seeding complete ═══");

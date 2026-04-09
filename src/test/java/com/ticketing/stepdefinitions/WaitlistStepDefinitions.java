@@ -51,6 +51,12 @@ public class WaitlistStepDefinitions {
         waitlistSteps.loginAsUser(TestDataConfig.TEST_USER_EMAIL, TestDataConfig.TEST_USER_PASSWORD);
     }
 
+    @Given("existe un evento {string} con la sección {string} totalmente reservada")
+    public void existeEventoConSeccionTotalmenteReservada(String eventName, String sectionName) {
+        logger.info("Step: Creando evento {} con sección {} totally reservada", eventName, sectionName);
+        waitlistSteps.createEventWithFullyReservedSection(eventName, sectionName);
+    }
+
     // ========================================================================
     // Navigation & preconditions
     // ========================================================================
@@ -59,6 +65,12 @@ public class WaitlistStepDefinitions {
     public void accesoALaPaginaDeDetallesDelEvento(String eventName) {
         logger.info("Step: Navegando a detalles del evento: {}", eventName);
         waitlistSteps.navigateToEventDetails(eventName);
+    }
+
+    @Given("hago clic en un asiento reservado de la sección {string}")
+    public void hagoClicEnAsientoReservado(String sectionName) {
+        logger.info("Step: Clicking reserved seat in section: {}", sectionName);
+        waitlistSteps.clickReservedSeat(sectionName);
     }
 
     @Given("la sección {string} tiene asientos reservados por otro usuario")
@@ -165,6 +177,17 @@ public class WaitlistStepDefinitions {
         boolean duplicateOrBanner = waitlistSteps.verifyDuplicateErrorVisible()
             || waitlistSteps.verifyWaitlistBannerVisible();
         Assert.assertTrue("Debe mostrar error de duplicado o banner activo", duplicateOrBanner);
+    }
+
+    @Then("el botón de unirse a la lista de espera debe mostrar {string}")
+    public void elBotonDebeMostrar(String expectedText) {
+        logger.info("Step: Verificando que el botón muestra: {}", expectedText);
+        waitlistSteps.waitForPageUpdate();
+        String buttonText = waitlistSteps.getJoinWaitlistButtonText();
+        Assert.assertTrue(
+            "El botón debe mostrar '" + expectedText + "' pero mostrar: " + buttonText,
+            buttonText.contains(expectedText)
+        );
     }
 
 }

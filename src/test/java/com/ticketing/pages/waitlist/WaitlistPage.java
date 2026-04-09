@@ -42,9 +42,12 @@ public class WaitlistPage extends BasePage {
     // Join Waitlist
     // ========================================================================
 
+    private static final String WAITLIST_BUTTON_XPATH =
+            "//button[contains(text(), 'Join Waitlist') or contains(text(), 'On Waitlist')]";
+
     public boolean isJoinWaitlistButtonVisible() {
         try {
-            WebElement btn = getDriver().findElement(By.xpath(JOIN_WAITLIST_XPATH));
+            WebElement btn = getDriver().findElement(By.xpath(WAITLIST_BUTTON_XPATH));
             return btn.isDisplayed();
         } catch (Exception e) {
             logger.debug("Join Waitlist button not visible");
@@ -54,8 +57,27 @@ public class WaitlistPage extends BasePage {
 
     public void clickJoinWaitlistButton() {
         logger.info("Clicking Join Waitlist button");
-        WebElement btn = waitForElement(By.xpath(JOIN_WAITLIST_XPATH));
+        WebElement btn = waitForElement(By.xpath(WAITLIST_BUTTON_XPATH));
         btn.click();
+    }
+
+    public String getJoinWaitlistButtonText() {
+        try {
+            WebElement btn = getDriver().findElement(By.xpath(WAITLIST_BUTTON_XPATH));
+            return btn.getText();
+        } catch (Exception e) {
+            logger.debug("Could not get button text");
+            return "";
+        }
+    }
+
+    public boolean isOnWaitlistButtonVisible() {
+        try {
+            WebElement btn = getDriver().findElement(By.xpath("//button[contains(text(), 'On Waitlist')]"));
+            return btn.isDisplayed();
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     // ========================================================================

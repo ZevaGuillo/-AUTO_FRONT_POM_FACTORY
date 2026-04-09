@@ -15,6 +15,78 @@ public class WaitlistSteps {
     private EventsListPage eventsListPage;
     private EventDetailsPage eventDetailsPage;
     private WaitlistPage waitlistPage;
+
+    @Step("Creating event {0} with section {1} fully reserved")
+    public void createEventWithFullyReservedSection(String eventName, String sectionName) {
+        logger.info("Creating event {} with section {} fully reserved", eventName, sectionName);
+        
+        String eventId = com.ticketing.utils.EventApiClient.getEventId(eventName);
+        logger.info("Event ID from API: {}", eventId);
+        if (eventId == null) {
+            eventId = com.ticketing.utils.EventApiClient.createEvent(
+                eventName,
+                "Evento para pruebas de waitlist",
+                java.time.LocalDateTime.now().plusDays(1).toString(),
+                "Teatro Central",
+                "1",
+                "1.00"
+            );
+            logger.info("Created new event with ID: {}", eventId);
+        }
+        if (eventId == null) throw new AssertionError("No se pudo crear el evento de prueba");
+
+        String seatsUrl = System.getProperty("admin.events.api.url",
+                com.ticketing.utils.TestDataConfig.CATALOG_BASE_URL + "/admin/events")
+                + "/" + eventId + "/seats";
+        logger.info("Seats URL: {}", seatsUrl);
+        
+        String body = String.format("{\"sectionConfigurations\":[{\"sectionCode\":\"%s\",\"rows\":1,\"seatsPerRow\":1,\"priceMultiplier\":1.0}]}", sectionName);
+        logger.info("Request body for seats: {}", body);
+        
+        try {
+            java.net.http.HttpRequest.Builder reqBuilder = java.net.http.HttpRequest.newBuilder()
+                    .uri(java.net.URI.create(seatsUrl))
+                    .header("Content-Type", "application/json")
+                    .header("Accept", "application/json")
+                    .POST(java.net.http.HttpRequest.BodyPublishers.ofString(body))
+                    .timeout(java.time.Duration.ofSeconds(com.ticketing.utils.TestDataConfig.HTTP_TIMEOUT_SECONDS));
+            String adminToken = com.ticketing.utils.EventApiClient.getAdminToken();
+            logger.info("Admin token present: {}", adminToken != null);
+            if (adminToken != null) {
+                reqBuilder.header("Authorization", "Bearer " + adminToken);
+            }
+            java.net.http.HttpRequest request = reqBuilder.build();
+            java.net.http.HttpResponse<String> response = java.net.http.HttpClient.newHttpClient().send(request, java.net.http.HttpResponse.BodyHandlers.ofString());
+            logger.info("Seats API response status: {}", response.statusCode());
+            logger.info("Seats API response body: {}", response.body());
+        } catch (Exception e) {
+            throw new AssertionError("No se pudo generar el asiento para la sección: " + sectionName, e);
+        }
+
+        logger.info("Logging in as reserve user to reserve seat");
+        loginAsUser(com.ticketing.utils.TestDataConfig.RESERVE_USER_EMAIL, com.ticketing.utils.TestDataConfig.RESERVE_USER_PASSWORD);
+        
+        logger.info("Navigating to event details for: {}", eventName);
+        navigateToEventDetails(eventName);
+        
+        logger.info("Clicking specific seat: {} row {} seat {}", sectionName, 1, 1);
+        clickSpecificSeat(sectionName, 1, 1);
+        
+        logger.info("Waiting for page update after seat click");
+        waitForPageUpdate();
+        
+        logger.info("Clicking Reserve & Add to Cart button");
+        clickReserveAndAddToCart();
+        
+        logger.info("Waiting for page update after reservation");
+        waitForPageUpdate();
+        
+        logger.info("Logging in as test user (User B)");
+        loginAsUser(com.ticketing.utils.TestDataConfig.TEST_USER_EMAIL, com.ticketing.utils.TestDataConfig.TEST_USER_PASSWORD);
+        
+        logger.info("Event setup complete - section {} should now have 1 reserved seat", sectionName);
+    }
+
     // ========================================================================
     // Authentication
     // ========================================================================
@@ -115,6 +187,11 @@ public class WaitlistSteps {
     public void clickJoinWaitlistButton() {
         logger.info("Clicking Join Waitlist button");
         waitlistPage.clickJoinWaitlistButton();
+    }
+
+    @Step("Getting Join Waitlist button text")
+    public String getJoinWaitlistButtonText() {
+        return waitlistPage.getJoinWaitlistButtonText();
     }
 
     // ========================================================================

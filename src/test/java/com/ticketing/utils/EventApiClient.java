@@ -33,7 +33,21 @@ public final class EventApiClient {
             System.getProperty("admin.events.api.url",
                     TestDataConfig.CATALOG_BASE_URL + "/admin/events");
 
+    /** Cached admin token for all catalog admin requests. */
+    private static volatile String adminToken;
+
     private EventApiClient() { /* utility class */ }
+
+    /**
+     * Set the admin JWT token used for catalog admin API calls.
+     */
+    public static void setAdminToken(String token) {
+        adminToken = token;
+    }
+
+    public static String getAdminToken() {
+        return adminToken;
+    }
 
     // ── Check if event exists ──────────────────────────────────────────────
 
@@ -100,13 +114,16 @@ public final class EventApiClient {
                 name, description, eventDate, venue, maxCapacity, basePrice);
 
         try {
-            HttpRequest request = HttpRequest.newBuilder()
+            HttpRequest.Builder reqBuilder = HttpRequest.newBuilder()
                     .uri(URI.create(EVENTS_ADMIN_URL))
                     .header("Content-Type", "application/json")
                     .header("Accept", "application/json")
                     .POST(HttpRequest.BodyPublishers.ofString(body))
-                    .timeout(Duration.ofSeconds(TestDataConfig.HTTP_TIMEOUT_SECONDS))
-                    .build();
+                    .timeout(Duration.ofSeconds(TestDataConfig.HTTP_TIMEOUT_SECONDS));
+            if (adminToken != null) {
+                reqBuilder.header("Authorization", "Bearer " + adminToken);
+            }
+            HttpRequest request = reqBuilder.build();
 
             HttpResponse<String> response =
                     HTTP.send(request, HttpResponse.BodyHandlers.ofString());
@@ -147,13 +164,16 @@ public final class EventApiClient {
                 + "]}";
 
         try {
-            HttpRequest request = HttpRequest.newBuilder()
+            HttpRequest.Builder reqBuilder = HttpRequest.newBuilder()
                     .uri(URI.create(seatsUrl))
                     .header("Content-Type", "application/json")
                     .header("Accept", "application/json")
                     .POST(HttpRequest.BodyPublishers.ofString(body))
-                    .timeout(Duration.ofSeconds(TestDataConfig.HTTP_TIMEOUT_SECONDS))
-                    .build();
+                    .timeout(Duration.ofSeconds(TestDataConfig.HTTP_TIMEOUT_SECONDS));
+            if (adminToken != null) {
+                reqBuilder.header("Authorization", "Bearer " + adminToken);
+            }
+            HttpRequest request = reqBuilder.build();
 
             HttpResponse<String> response =
                     HTTP.send(request, HttpResponse.BodyHandlers.ofString());
@@ -217,13 +237,15 @@ public final class EventApiClient {
     // ── Internal helpers ──────────────────────────────────────────────────
 
     private static HttpResponse<String> doGet(String url) throws Exception {
-        HttpRequest request = HttpRequest.newBuilder()
+        HttpRequest.Builder reqBuilder = HttpRequest.newBuilder()
                 .uri(URI.create(url))
                 .header("Accept", "application/json")
                 .GET()
-                .timeout(Duration.ofSeconds(TestDataConfig.HTTP_TIMEOUT_SECONDS))
-                .build();
-        return HTTP.send(request, HttpResponse.BodyHandlers.ofString());
+                .timeout(Duration.ofSeconds(TestDataConfig.HTTP_TIMEOUT_SECONDS));
+        if (adminToken != null) {
+            reqBuilder.header("Authorization", "Bearer " + adminToken);
+        }
+        return HTTP.send(reqBuilder.build(), HttpResponse.BodyHandlers.ofString());
     }
 
     /** Extracts the first UUID-shaped "id" value from a JSON string. */
